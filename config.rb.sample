@@ -1,0 +1,19 @@
+require 'log4r'
+#include Log4r
+
+$log = Log4r::Logger.new 'levee_watch'
+$log.outputters = Log4r::RollingFileOutputter.new('rfo', :filename => 'levee_watch.log',:max_size => 1024)
+
+MONITORING_STATION_ID = 'STACYJA_1'
+SENSOR_ID = '121'
+MAX_MEASUREMENT_VALUE = 5
+MAX_MEASUREMENT_DELTA = 0.1 * MAX_MEASUREMENT_VALUE
+THRESHOLD = 0.7 * MAX_MEASUREMENT_VALUE
+GENERATOR_TMP_FILENAME = '/tmp/last_generated_measurement'
+
+
+DAP_BASE_URL = 'https://dap.example.pl'
+PRIVATE_TOKEN = 'PRIVATE TOKEN'
+
+REDIS_HOST = 'localhost'
+REDIS_CHANNEL_NAME = 'generated_measurements'
