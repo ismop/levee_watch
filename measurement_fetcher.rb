@@ -65,9 +65,21 @@ class MeasurementFetcher
     puts "Pressure measurements:\n #{press_measurements}"
   end
 
+  def device_aggregations_for_profile(profile_id)
+    da_resp = @conn.get(
+      "/api/v1/device_aggregations?profile_id=#{profile_id}",
+      { private_token: PRIVATE_TOKEN }
+    ).body
+    das = JSON.parse(da_resp)['device_aggregations']
+    puts "Device aggregations:\n#{das}"
+  end
+
 end
+
+
 
 fetcher = MeasurementFetcher.new
 time_from='2015-10-03 9:40:40 +0200'
 time_to='2015-10-03 9:45:40 +0200'
-fetcher.get(1, 'UT7', time_from, time_to)
+#fetcher.get(1, 'UT7', time_from, time_to)
+fetcher.device_aggregations_for_profile(8)
