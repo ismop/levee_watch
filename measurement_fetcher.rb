@@ -1,5 +1,6 @@
 require_relative './config.rb'
 
+require 'fileutils'
 require 'faraday'
 require 'json'
 require 'date'
@@ -10,11 +11,10 @@ class MeasurementFetcher
     @conn = Faraday.new(url: DAP_BASE_URL, ssl:{verify: false})
   end
 
-  def get(ctx_id, profile_id, from, to, working_dir = '/tmp/')
-    device_aggregations = device_aggregations_for_profile(profile_id)
-    device_aggregations.each do |da|
-      devices = devices(da['device_ids'])
-      parameter_ids = devices.collect { |d| d['parameter_ids'] }.flatten
+  def get(ctx_id, scenario_id, profile_id, from, to, file_name_prefix = '', working_dir = '/tmp/')
+    devices = devices_for_profile(profile_id)
+    devices.each do |dev|
+      parameter_ids = dev['parameter_ids']
       next if parameter_ids.size == 0
       parameters = parameters(parameter_ids)
 
@@ -29,39 +29,67 @@ class MeasurementFetcher
       next unless press_param
       press_param_id = press_param['id']
 
-      temp_tl = timeline(ctx_id, temp_param_id)
+      temp_tl = timeline(ctx_id, scenario_id, temp_param_id)
       next unless temp_tl
       temp_tl_id = temp_tl['id']
 
-      press_tl = timeline(ctx_id, press_param_id)
+      press_tl = timeline(ctx_id, scenario_id, press_param_id)
       next unless press_tl
       press_tl_id = press_tl['id']
 
       temp_measurements = temperature_measurements(temp_tl_id, from, to)
+      next unless temp_measurements
 
       press_measurements = pressure_measurements(press_tl_id, from, to)
+      next unless press_measurements
 
       next if (temp_measurements.size == 0 || press_measurements.size == 0)
       next if temp_measurements.size != press_measurements.size
 
       working_dir << '/' unless working_dir.end_with? '/'
-      file_name = "#{working_dir}#{da['custom_id']}.csv"
-      puts "Writing file #{file_name}"
-      File.open(file_name, 'w') do |file|
-        temp_measurements.each_index do |i|
-          file.write(
-            "0,0,0,0,#{temp_measurements[i]['value']},"\
-            "#{press_measurements[i]['value']},"\
-            "#{timestamp(temp_measurements[i]['timestamp'])},"\
-            "#{da['custom_id']}\n"
-          )
-        end
+
+      scenario = !scenario_id.nil?
+
+      write_measurements(
+          dev, press_measurements, temp_measurements,
+          file_name_prefix, working_dir, scenario
+      )
+    end
+  end
+
+  private
+
+  def write_measurements(dev, p_measurements, t_measurements, fname_prefix, working_dir, scenario)
+    unless Dir.exist?(working_dir)
+      FileUtils.mkpath(working_dir)
+    end
+    file_name = "#{working_dir}#{fname_prefix}#{dev['custom_id']}.csv"
+    puts "Writing file #{file_name}"
+    File.open(file_name, 'w') do |file|
+      t_measurements.each_index do |i|
+        # data in scenario and measurement files have columns in different order
+        row = "0,0,0,"\
+            "#{"0," unless scenario}"\
+            "#{t_measurements[i]['value']},"\
+            "#{p_measurements[i]['value']},"\
+            "#{timestamp(t_measurements[i]['timestamp'])},"\
+             "#{"0," if scenario}"\
+            "#{dev['custom_id']}\n"
+        file.write(row)
       end
     end
   end
 
   def timestamp(date_str)
     DateTime.parse(date_str).to_time.to_i
+  end
+
+  def devices_for_profile(profile_id)
+    devices_resp = @conn.get(
+        "/api/v1/devices?profile_id=#{profile_id}",
+        { private_token: private_token }
+    ).body
+    JSON.parse(devices_resp)['devices']
   end
 
   def devices(ids)
@@ -86,9 +114,11 @@ class MeasurementFetcher
     JSON.parse(parameters_resp)['parameters']
   end
 
-  def timeline(ctx_id, parameter_id)
+  def timeline(ctx_id, scenario_id, parameter_id)
     pt_resp = @conn.get(
-        "/api/v1/timelines?parameter_id=#{parameter_id}&context_id=#{ctx_id}",
+        "/api/v1/timelines?parameter_id=#{parameter_id}"\
+        "&context_id=#{ctx_id}"\
+        "#{"&scenario_id=#{scenario_id}" if scenario_id}",
         {private_token: private_token}
     ).body
     JSON.parse(pt_resp)['timelines'].first
@@ -97,7 +127,8 @@ class MeasurementFetcher
   def temperature_measurements(timeline_id, from, to)
     temp_measurements_resp = @conn.get(
         "/api/v1/measurements?timeline_id=#{timeline_id}"\
-        "&time_from=#{from}&time_to=#{to}",
+        "#{"&time_from=#{from}" if from}"\
+        "#{"&time_to=#{to}" if to}",
         {private_token: private_token}
     ).body
     JSON.parse(temp_measurements_resp)['measurements']
@@ -112,31 +143,35 @@ class MeasurementFetcher
     JSON.parse(press_measurements_resp)['measurements']
   end
 
-  def device_aggregations_for_profile(profile_id)
-    da_resp = @conn.get(
-      "/api/v1/device_aggregations?profile_id=#{profile_id}",
-      { private_token: private_token }
-    ).body
-    JSON.parse(da_resp)['device_aggregations']
-  end
-
-  private
   def private_token
     ENV['PRIVATE_TOKEN'] || PRIVATE_TOKEN
   end
 
 end
 
-fetcher = MeasurementFetcher.new
-context_id = 1
-time_from = '2015-10-03 9:40:40 +0200'
-time_to = '2015-10-03 9:45:40 +0200'
 
-# ids of profiles in DAP production
-#[9, 10, 3, 6, 7, 1, 2, 4, 5, 8].each do |profile_id|
-# only for profile_id 9 there are some data
-[9].each do |profile_id|
+fetcher = MeasurementFetcher.new
+# context 1 Obwałowanie eksperymentalne - sensory Budokop
+# context 2 Scenariusze
+
+puts '----- Getting scenarios data -----'
+context_id = 2
+scenario_id = 2 # for now we have 25 scenarios, check their ids in DAP
+
+# nil from and to means all available data
+time_from = '1970-01-01 0:00:00 +0200' # nil # scenario starts at '1970-01-01 0:00:00 +0200'
+time_to = '1970-01-01 8:00:00 +0200'
+
+# scenarios are not available for all profiles
+# there is some data available for profile with id = 2
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].each do |profile_id|
   puts "---Getting measurements for profile with id #{profile_id}---"
-  fetcher.get(context_id, profile_id, time_from, time_to)
+  fetcher.get(context_id, scenario_id, profile_id, time_from, time_to,
+              "scenario_#{scenario_id}_", '/tmp/test2/scenarios')
   puts '============================================================'
 end
+
+puts '----- Got available scenarios data -----'
+
+# TODO get real measurements
+
