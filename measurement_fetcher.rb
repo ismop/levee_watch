@@ -137,7 +137,8 @@ class MeasurementFetcher
   def pressure_measurements(timeline_id, from, to)
     press_measurements_resp = @conn.get(
         "/api/v1/measurements?timeline_id=#{timeline_id}"\
-        "&time_from=#{from}&time_to=#{to}",
+        "#{"&time_from=#{from}" if from}"\
+        "#{"&time_to=#{to}" if to}",
         {private_token: private_token}
     ).body
     JSON.parse(press_measurements_resp)['measurements']
@@ -156,22 +157,40 @@ fetcher = MeasurementFetcher.new
 
 puts '----- Getting scenarios data -----'
 context_id = 2
-scenario_id = 2 # for now we have 25 scenarios, check their ids in DAP
+scenario_id = 26 # for now we have 25 scenarios, check their ids in DAP
 
 # nil from and to means all available data
-time_from = '1970-01-01 0:00:00 +0200' # nil # scenario starts at '1970-01-01 0:00:00 +0200'
-time_to = '1970-01-01 8:00:00 +0200'
+time_from = nil # nil # scenario starts at '1970-01-01 0:00:00 +0200'
+time_to = nil # '1970-01-01 8:00:00 +0200'
+
+# time_from = '1970-01-01 0:00:00 +0200'
+# time_to = '1970-01-01 8:00:00 +0200'
 
 # scenarios are not available for all profiles
 # there is some data available for profile with id = 2
 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].each do |profile_id|
-  puts "---Getting measurements for profile with id #{profile_id}---"
+  puts "---Getting scenario data for profile with id #{profile_id}---"
   fetcher.get(context_id, scenario_id, profile_id, time_from, time_to,
-              "scenario_#{scenario_id}_", '/tmp/test2/scenarios')
+              "scenario_#{scenario_id}_", '/tmp/scenarios')
   puts '============================================================'
 end
 
 puts '----- Got available scenarios data -----'
 
-# TODO get real measurements
+puts '----- Getting measurements data -----'
+context_id = 1
+scenario_id = nil
 
+time_from = '2015-10-01 0:00:00 +0200'
+time_to = '2015-10-01 8:00:00 +0200'
+
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].each do |profile_id|
+  puts "---Getting measurements for profile with id #{profile_id}---"
+  fetcher.get(context_id, scenario_id, profile_id, time_from, time_to,
+              nil, '/tmp/measurements')
+  puts '============================================================'
+end
+
+puts '----- Got available measurements data -----'
+
+puts '===== FINISHED ====='
