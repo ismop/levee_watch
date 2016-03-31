@@ -1,4 +1,2 @@
-scheduler: resque-scheduler -D -v -l scheduler.log
+scheduler: resque-scheduler -D -v -i 1 -l scheduler.log
 worker: QUEUE=job rake resque:work
-#enqueue: ruby enqueue_jobs.rb
-

@@ -1,5 +1,5 @@
-require_relative './generate.rb'
-require_relative './monitor.rb'
+require 'resque/scheduler/tasks'
 
-require 'resque/tasks'
-
+require_relative './run_workflow.rb'
+require_relative './check_threat_assessment.rb'
+require_relative './monitor_workflow.rb'
