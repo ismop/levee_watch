@@ -1,19 +1,17 @@
 require 'log4r'
-#include Log4r
 
 $log = Log4r::Logger.new 'levee_watch'
 $log.outputters = Log4r::RollingFileOutputter.new('rfo', :filename => 'levee_watch.log',:max_size => 1024)
 
-MONITORING_STATION_ID = 'STACYJA_1'
-SENSOR_ID = '121'
-MAX_MEASUREMENT_VALUE = 5
-MAX_MEASUREMENT_DELTA = 0.1 * MAX_MEASUREMENT_VALUE
-THRESHOLD = 0.7 * MAX_MEASUREMENT_VALUE
-GENERATOR_TMP_FILENAME = '/tmp/last_generated_measurement'
+WORKFLOW_RUN_PERIOD = '1m'
+FIRST_WORKFLOW_RUN_DELAY = '15s'
 
+CHECK_THREAT_ASSESSMENT_PERIOD = '1m'
+FIRST_CHECK_THREAT_ASSESSMENT_DELAY = '30s'
 
-DAP_BASE_URL = 'https://dap.example.pl'
-PRIVATE_TOKEN = 'PRIVATE TOKEN'
+WORKFLOW_MONITORING_PERIOD = '1m'
+FIRST_WORKFLOW_MONITORING_DELAY = '45s'
 
-REDIS_HOST = 'localhost'
-REDIS_CHANNEL_NAME = 'generated_measurements'
+DAP_BASE_URL = 'https://dap-dev.moc.ismop.edu.pl'
+PRIVATE_TOKEN = 'PRIVATE_TOKEN'
+
