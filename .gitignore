@@ -1,4 +1,4 @@
 config.rb
-dane.tgz
 .idea
-
+scheduler.log
+levee_watch*.log
