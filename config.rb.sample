@@ -15,3 +15,6 @@ FIRST_WORKFLOW_MONITORING_DELAY = '45s'
 DAP_BASE_URL = 'https://dap-dev.moc.ismop.edu.pl'
 PRIVATE_TOKEN = 'PRIVATE_TOKEN'
 
+HYPGEN_URL = 'https://hypgen.moc.ismop.edu.pl/'
+HYPGEN_USERNAME = 'change-me'
+HYPGEN_PASSWORD = 'change-me'
