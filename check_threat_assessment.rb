@@ -5,8 +5,14 @@ require 'resque-scheduler'
 class CheckThreatAssessment
   @queue = :job
 
-  def self.perform
-    $log.info 'Checking threat assessment'
-    $log.info 'TB will implement me and I will check similarity in DAP and reschedule running wf if necessary'
+  def self.perform(params)
+    $log.info "Checking threat assessment #{params}"
+    conn = Faraday.new(url: DAP_BASE_URL, ssl:{verify: false})
+    resp = conn.get(
+        "/api/v1/threat_assessments/#{params['threat_assessment_id']}",
+        {private_token: PRIVATE_TOKEN}
+    )
+    $log.info "Response status: #{resp.status}"
+    $log.info "Response body: #{resp.body}"
   end
 end
