@@ -3,8 +3,8 @@ require 'log4r'
 $log = Log4r::Logger.new 'levee_watch'
 $log.outputters = Log4r::RollingFileOutputter.new('rfo', :filename => 'levee_watch.log',:max_size => 1024)
 
-WORKFLOW_RUN_PERIOD_NORMAL_MODE = '15m'
-WORKFLOW_RUN_PERIOD_EMERGENCY_MODE = '1m'
+WF_RUN_PERIOD_NORMAL_MODE = '15m'
+WF_RUN_PERIOD_EMERGENCY_MODE = '1m'
 FIRST_WORKFLOW_RUN_DELAY = '15s'
 
 CHECK_THREAT_ASSESSMENT_PERIOD = '1m'
