@@ -1,26 +1,13 @@
 require 'resque-scheduler'
 
 require_relative './config.rb'
+require_relative './helpers.rb'
 
 Resque::Scheduler.dynamic = true
 
 def run_workflow
-  name = 'run_workflow'
-  hypgen_params = {
-      threat_assessment:
-          {
-              name: 'testing levee watch',
-              section_ids:[1,2]
-          }
-  }
-  config = {
-      class: 'RunWorkflow',
-      every: [WORKFLOW_RUN_PERIOD, {first_in: FIRST_WORKFLOW_RUN_DELAY}],
-      persist: false,
-      args: {hypgen_params: hypgen_params},
-      queue: :job
-  }
-  Resque.set_schedule name, config
+  config = wf_job_conf('testing levee watch', [1,2], 0)
+  Resque.set_schedule 'run_workflow', config
 end
 
 def monitor_workflow
