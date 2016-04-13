@@ -24,3 +24,5 @@ HYPGEN_PASSWORD = 'change-me'
 # period to be taken into account when comparing current situation to smulated scenarios
 # in hours
 ANALYSIS_PERIOD = 24
+
+SIMILARITY_THRESHOLD = 0.5
