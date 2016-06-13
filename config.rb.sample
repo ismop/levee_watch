@@ -3,11 +3,14 @@ require 'log4r'
 $log = Log4r::Logger.new 'levee_watch'
 $log.outputters = Log4r::RollingFileOutputter.new('rfo', :filename => 'levee_watch.log',:max_size => 1024)
 
-WORKFLOW_RUN_PERIOD = '1m'
+WF_RUN_PERIOD_NORMAL_MODE = '15m'
+WF_RUN_PERIOD_EMERGENCY_MODE = '1m'
 FIRST_WORKFLOW_RUN_DELAY = '15s'
 
 CHECK_THREAT_ASSESSMENT_PERIOD = '1m'
-FIRST_CHECK_THREAT_ASSESSMENT_DELAY = '30s'
+
+# integer in minutes
+CHECK_THREAT_ASSESSMENT_DELAY = 5
 
 WORKFLOW_MONITORING_PERIOD = '1m'
 FIRST_WORKFLOW_MONITORING_DELAY = '45s'
@@ -15,3 +18,12 @@ FIRST_WORKFLOW_MONITORING_DELAY = '45s'
 DAP_BASE_URL = 'https://dap-dev.moc.ismop.edu.pl'
 PRIVATE_TOKEN = 'PRIVATE_TOKEN'
 
+HYPGEN_URL = 'https://hypgen.moc.ismop.edu.pl/'
+HYPGEN_USERNAME = 'change-me'
+HYPGEN_PASSWORD = 'change-me'
+
+# period to be taken into account when comparing current situation to smulated scenarios
+# in hours
+ANALYSIS_PERIOD = 24
+
+SIMILARITY_THRESHOLD = 0.5
