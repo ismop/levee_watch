@@ -28,7 +28,7 @@ $log.info 'Starting Levee watch'
 $log.info 'Scheduling Hypgen workflow'
 run_workflow
 $log.info 'Workflow scheduled'
-# $log.info 'Scheduling workflow monitoring'
-# monitor_workflow
-# $log.info 'Scheduled workflow monitoring'
+$log.info 'Scheduling workflow monitoring'
+monitor_workflow
+$log.info 'Scheduled workflow monitoring'
 $log.info 'Work done.'
