@@ -4,6 +4,8 @@ require 'resque-scheduler'
 require 'faraday'
 require 'time'
 
+QUERY_RESULT_LIMIT = 10
+
 class MonitorWorkflow
   @queue = :job
 
@@ -13,7 +15,13 @@ class MonitorWorkflow
     conn = Faraday.new(url: DAP_BASE_URL, ssl: {verify: false})
     resp = conn.get(
         '/api/v1/threat_assessment_runs',
-        {private_token: PRIVATE_TOKEN}
+        {
+            private_token: PRIVATE_TOKEN,
+            sort_by: :start_date,
+            sort_order: :desc,
+            status: :finished,
+            limit: QUERY_RESULT_LIMIT
+        }
     )
     # $log.info "Response status: #{resp.status}"
     # $log.info "Response body: #{resp.body}"
