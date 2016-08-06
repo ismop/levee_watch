@@ -5,6 +5,9 @@ require 'faraday'
 require 'time'
 
 QUERY_RESULT_LIMIT = 10
+#allow for one hour of inactivity
+MAXIMUM_INACTIVITY_PERIOD = 60*60*60
+
 
 class MonitorWorkflow
   @queue = :job
